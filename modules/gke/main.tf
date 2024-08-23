@@ -5,6 +5,8 @@ resource "google_container_cluster" "primary" {
   network    = var.network_name
   subnetwork = var.subnet_name
 
+  deletion_protection = false
+
   initial_node_count = 1
   project            = var.project_id
 
