@@ -15,31 +15,23 @@ resource "google_container_cluster" "primary" {
       issue_client_certificate = false
     }
   }
-
-  logging_service    = "logging.googleapis.com/kubernetes"
-  monitoring_service = "monitoring.googleapis.com/kubernetes"
-
   ip_allocation_policy {
     cluster_secondary_range_name  = "pods"
     services_secondary_range_name = "services"
   }
 
   node_config {
-    machine_type = "e2-medium"
-    oauth_scopes = [
-      "https://www.googleapis.com/auth/cloud-platform"
-    ]
+    machine_type    = var.node_machine_type
+    oauth_scopes    = var.node_oauth_scopes
     service_account = var.node_service_account
-    disk_size_gb = 25  
+    disk_size_gb    = var.node_disk_size_gb
   }
 
   vertical_pod_autoscaling {
-    enabled = true
+    enabled = var.vertical_pod_autoscaling_enabled
   }
 
-  resource_labels = {
-    env = "prod"
-  }
+  resource_labels = var.resource_labels
 
   lifecycle {
     ignore_changes = [initial_node_count]
@@ -49,26 +41,24 @@ resource "google_container_cluster" "primary" {
 resource "google_container_node_pool" "primary_nodes" {
   cluster    = google_container_cluster.primary.name
   location   = google_container_cluster.primary.location
-  node_count = 1
+  node_count = var.node_count
   project    = var.project_id
 
   node_config {
-    preemptible  = false
-    machine_type = "e2-medium"
-    oauth_scopes = [
-      "https://www.googleapis.com/auth/cloud-platform"
-    ]
+    preemptible     = var.preemptible
+    machine_type    = var.node_machine_type
+    oauth_scopes    = var.node_oauth_scopes
     service_account = var.node_service_account
-    disk_size_gb = 25  
+    disk_size_gb    = var.node_disk_size_gb
   }
 
   management {
-    auto_upgrade = true
-    auto_repair  = true
+    auto_upgrade = var.auto_upgrade
+    auto_repair  = var.auto_repair
   }
 
   autoscaling {
-    min_node_count = 1
-    max_node_count = 5
+    min_node_count = var.min_node_count
+    max_node_count = var.max_node_count
   }
 }
